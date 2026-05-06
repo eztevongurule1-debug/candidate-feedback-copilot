@@ -39,32 +39,39 @@ export default function Home() {
   }
 
   async function handleResumeUpload(file: File) {
+  try {
+    setUploading(true);
+    setResume("Reading resume PDF...");
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const res = await fetch("/api/extract-resume", {
+      method: "POST",
+      body: formData,
+    });
+
+    const text = await res.text();
+
     try {
-      setUploading(true);
-      setResume("Reading resume PDF...");
-
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const res = await fetch("/api/extract-resume", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await res.json();
+      const data = JSON.parse(text);
 
       if (data.error) {
         setResume("Could not read PDF: " + data.error);
       } else {
         setResume(data.text || "No text found in PDF.");
       }
-    } catch (error) {
-      console.error(error);
-      setResume("Something went wrong reading the resume PDF.");
-    } finally {
-      setUploading(false);
+    } catch {
+      setResume("PDF upload route returned an error:\n\n" + text);
     }
+  } catch (error) {
+    console.error(error);
+    setResume("Something went wrong reading the resume PDF.");
+  } finally {
+    setUploading(false);
   }
+}
+
 
   return (
     <main className="min-h-screen bg-[#f4f7fb] p-8 text-black">

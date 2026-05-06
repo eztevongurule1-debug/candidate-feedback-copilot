@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import pdf from "pdf-parse";
+
+export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   try {
@@ -7,25 +8,19 @@ export async function POST(req: Request) {
     const file = formData.get("file") as File | null;
 
     if (!file) {
-      return NextResponse.json(
-        { error: "No file uploaded." },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "No file uploaded." }, { status: 400 });
     }
 
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    const data = await pdf(buffer);
-
     return NextResponse.json({
-      text: data.text,
+      text: `Resume uploaded successfully: ${file.name}
+
+PDF text extraction is currently being prepared. For now, paste the resume text here after uploading.`,
     });
   } catch (error) {
     console.error(error);
 
     return NextResponse.json(
-      { error: "Failed to read PDF resume." },
+      { error: "Failed to upload resume." },
       { status: 500 }
     );
   }
